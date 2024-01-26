@@ -24,6 +24,11 @@ io.on('connection', (socket) => {
         // console.log("user disconnected : " + socket.id)
     })
    
+    // socket.on("custom-room" , (customroom)=>{
+    //     socket.join(customroom);
+    //     console.log("a user has joined customroom")
+    // })
+
     socket.on('message', ({message,room}) => {
         // console.log(message)
         // console.log(room)

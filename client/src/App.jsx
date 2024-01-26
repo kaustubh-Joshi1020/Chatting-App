@@ -2,15 +2,17 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { io } from "socket.io-client";
 import "./App.css";
  
-const App = ()=> {
+const App =()=> {
  
   // const socket = io("http://localhost:8000")
+    // const[sendMessages , setsendMessages] = useState([]);
+  // const[receivedMessages , setreceivedMessages] = useState([]);
   const socket = useMemo(()=> io("http://localhost:8000"),[])
-  const[receivedMessages , setreceivedMessages] = useState([]);
   const[socketid , setsocketid] = useState("") // used to display socket id
   const[message , setmessage] = useState(""); 
   const[room , setroom] = useState("");
-  const[sendMessages , setsendMessages] = useState([]);
+  const[allMessages , setallMessages] = useState([]);
+  const[customroom , setcustomroom] = useState([]);
  
   useEffect(()=>{
     socket.on("connect" , ()=>{
@@ -19,8 +21,9 @@ const App = ()=> {
     })
 
     socket.on("received-msg" , (message)=>{
-      setreceivedMessages((prevMessages) => [...prevMessages, message]);
+      setallMessages((prevMessages) => [...prevMessages, { text: message, type: 'received' }]);
     })
+
 
   return () =>{
     socket.disconnect()
@@ -31,7 +34,7 @@ const App = ()=> {
 const handleSubmit = (e) =>{
   e.preventDefault();
   socket.emit("message",{message,room});
-  setsendMessages((prevMessages) => [...prevMessages, message]);
+  setallMessages((prevMessages) => [...prevMessages, { text: message, type: 'send' }]);
   setmessage("");
 }
 
@@ -44,31 +47,48 @@ const handleroom = (e) =>{
   setroom(e.target.value)
 }
 
+const handlecustomroom = (e) =>{
+  e.preventDefault()
+  setcustomroom(e.target.value)
+}
+
+const handlecustomroomsubmit = (e) =>{
+  e.preventDefault()
+  socket.emit("custom-room" , customroom)
+  setcustomroom("")
+}
+
   return (
     <div className="flex flex-col items-center h-screen">
-    <h1 className="text-2xl mb-10 font-bold">Get Your Gossip's Done</h1>
-    <h1 className=" mb-10 font-bold">{`Your Room : ${socketid}`}</h1>
+    <h1 className="text-2xl mb-4 font-bold">Get Your Gossip's Done</h1>
+    <h1 className=" mb-4 font-bold">{`Your ID : ${socketid}`}</h1>
     <div className="p-4 max-w-md w-full h-96 overflow-y-auto border-solid shadow-xl border-2">
       
-      <ul className="p-0">
-      {sendMessages.map((messg, index) => (
+      <ul className="p-0">        
+        {allMessages.map((msg, index) => (
           <li key={index} className={`mb-2`}>
-            <div className="pl-5 p-3 rounded-lg shadow-md">
-              {messg}
-            </div>
-          </li>
-        ))}
-
-        {receivedMessages.map((msg, index) => (
-          <li key={index} className={`mb-2`}>
-            <div className="pl-5 p-3 rounded-lg shadow-md">
-              {msg}
+            <div className={`pl-5 p-3 rounded-lg shadow-md ${msg.type === 'send' ? ' text-right'  : ' text-left'}`}>
+              {msg.text}
             </div>
           </li>
         ))}
       </ul>
       
     </div>
+
+  {/* <form onSubmit={handlecustomroomsubmit} className="w-full max-w-md mt-4">
+  <input
+        type="text"
+        onChange={handlecustomroom}
+        value={customroom}
+        placeholder="Enter Room Name To Create Or To Join Created Room"
+        className="w-full mb-2 p-2 border border-gray-300 rounded-md"
+      />
+      <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded-md">
+        Create/Join Existing Custom Room
+      </button>
+  </form> */}
+
     <form onSubmit={handleSubmit} className="w-full max-w-md mt-4">
       <input
         type="text"
@@ -82,7 +102,7 @@ const handleroom = (e) =>{
         type="text"
         onChange={handleroom}
         value={room}
-        placeholder="Enter Room Id"
+        placeholder="Enter Room Id To Chat In Group / Only Id to Private Chat"
         className="w-full mb-2 p-2 border border-gray-300 rounded-md"
       />
       <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded-md">
@@ -128,3 +148,19 @@ export default App;
     //     ))}
     //   </ul>
     // </div>
+
+          {/* {sendMessages.map((messg, index) => (
+          <li key={index} className={`mb-2`}>
+            <div className="pl-5 p-3 rounded-lg shadow-md">
+              {messg}
+            </div>
+          </li>
+        ))}
+
+        {receivedMessages.map((msg, index) => (
+          <li key={index} className={`mb-2`}>
+            <div className="pl-5 p-3 rounded-lg shadow-md">
+              {msg}
+            </div>
+          </li>
+        ))} */}
