@@ -24,16 +24,16 @@ io.on('connection', (socket) => {
         // console.log("user disconnected : " + socket.id)
     })
    
-    // socket.on("custom-room" , (customroom)=>{
-    //     socket.join(customroom);
-    //     console.log("a user has joined customroom")
-    // })
+    socket.on("Group" , (Group)=>{
+        socket.join(Group);
+        console.log("a user has joined Group")
+    })
 
-    socket.on('message', ({message,room}) => {
+    socket.on('message', ({message,room , senderId}) => {
         // console.log(message)
         // console.log(room)
         // io.emit("received-msg",message)
-        io.to(room).emit('received-msg', message);
+        io.to(room).emit('received-msg', {message ,senderId });
     })
 
 
